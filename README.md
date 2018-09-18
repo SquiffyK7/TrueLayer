@@ -2,11 +2,11 @@
 
 Requires Node and npm (tested with node v10.10.0 and npm 6.4.1 in Linux environment)
 
-install:
+install:  
   npm install request request-promise jsdom
 
-run:
-  ./hackernews [--posts n] 
+run:  
+  ./hackernews [--posts n]  
     where 1 <= n <= 100
 
 libraries:
