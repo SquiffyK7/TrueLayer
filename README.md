@@ -7,7 +7,7 @@ install:
 
 run:  
     ./hackernews [--posts n]  
-        where 1 <= n <= 100
+where 1 <= n <= 100
 
 libraries:
   request - make http calls, download hacker news html
