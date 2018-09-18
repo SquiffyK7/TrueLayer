@@ -10,7 +10,7 @@ run:
 where 1 <= n <= 100
 
 libraries:
-  request - make http calls, download hacker news html
-  request-promise - use request with promises rather than callbacks
-  jsdom - parse html page into DOM before extracting required data
+* request - make http calls, download hacker news html
+* request-promise - use request with promises rather than callbacks
+* jsdom - parse html page into DOM before extracting required data
 "# TrueLayer"  git init git add README.md git commit -m "first commit" git remote add origin https://github.com/SquiffyK7/TrueLayer.git git push -u origin master 
