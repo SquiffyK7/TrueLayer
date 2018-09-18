@@ -3,7 +3,7 @@
 Requires Node and npm (tested with node v10.10.0 and npm 6.4.1 in Linux environment)
 
 install:  
-    npm install request request-promise jsdom
+        npm install request request-promise jsdom
 
 run:  
     ./hackernews [--posts n]  
