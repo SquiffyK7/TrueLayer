@@ -1,0 +1,84 @@
+#!/bin/env node
+const rp = require('request-promise');
+const JSDOM = require("jsdom").JSDOM;
+
+const hackerNewsURL = 'https://news.ycombinator.com/';
+const thisFile = process.argv[1].split('/').pop();
+
+function parseAThing(aThing) {
+  // Nodes of class 'athing' together with their sibling nodes contain
+  // the information required to populate a record with post information.
+  // Parse these nodes and return the populated JSON record.
+  const record = {};
+  const subtext = aThing.nextSibling.lastChild;
+
+  record.title = aThing.lastChild.firstChild.innerHTML;
+  record.uri = aThing.lastChild.firstChild.getAttribute('href');
+
+  // Not all posts contain all the required information
+  if(subtext.children.length === 6) {
+    record.author = subtext.childNodes[3].innerHTML;
+    record.points = Number(subtext.childNodes[1].innerHTML.match(/[0-9]+/g)[0]);
+    let comments = subtext.childNodes[11].innerHTML.match(/[0-9]+/g);
+    record.comments = Number(comments ? comments[0] : 0);
+  }
+
+  record.rank = Number(aThing.childNodes[1].firstChild.innerHTML.match(/[0-9]+/g)[0]);
+
+  return record;
+}
+
+
+function getResults(n, page, results, requestedResults) {
+  return new Promise((pass, fail) => {
+    rp(hackerNewsURL+'news?p='+page)
+      .then(body => {
+        const dom = new JSDOM(body);
+        const aThings = dom.window.document.getElementsByClassName('athing');
+
+        for(let i=0; i<n; i++) {
+          // Parse n posts from downloaded page
+          results.push(parseAThing(aThings[i]));
+          if(results.length === requestedResults) {
+            results.sort((a, b) => a.rank - b.rank);
+            pass(results);
+          }
+        }
+
+      })
+      .catch(fail);
+  });
+}
+
+function completeScrape(results) {
+  console.log(JSON.stringify(results, null, 4));
+}
+
+function run() {
+  const results = [];
+
+  if(process.argv.length === 2) {
+    // If no input, scrape 30 posts by default
+    getResults(30, 1, results, 30).then(completeScrape).catch(console.log);
+
+  } else {
+    // Validate input
+    if(process.argv[2] !== '--posts' || 
+        !/[0-9]+/.test(process.argv[3]) ||
+        !(Number(process.argv[3]) > 0 && Number(process.argv[3]) <= 100)) {
+      console.log(`${thisFile}: run as '${thisFile} [--posts n]' where n is the number of posts to print between 1 and 100`);
+      return;
+    }
+
+    // Scrape required pages asynchronously until requested posts have been scraped
+    const n = Number(process.argv[3]);
+    let p=1;
+    for(p; p<=Math.floor(n/30); p++) {
+      getResults(30, p, results, n).then(completeScrape).catch(console.log);
+    }
+    getResults(n%30, p, results, n).then(completeScrape).catch(console.log);
+
+  }
+}
+
+run();
